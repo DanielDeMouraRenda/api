@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Api.Model;
+using Api.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,50 +58,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Mapeamento de endpoints
-app.MapGet("/api/usuario", async (IUsuarioRepository usuarioRepository) =>
-{
-    var usuarios = await usuarioRepository.BuscaUsuario();
-    return usuarios.Any() ? Results.Ok(usuarios) : Results.NoContent();
-});
-
-app.MapGet("/api/usuario/{id}", async (IUsuarioRepository usuarioRepository, int id) =>
-{
-    var usuario = await usuarioRepository.BuscaUsuario(id);
-    return usuario != null ? Results.Ok(usuario) : Results.NotFound("Usuário não encontrado");
-});
-
-app.MapPost("/api/usuario", async (IUsuarioRepository usuarioRepository, Usuario usuario) =>
-{
-    usuarioRepository.AdicionarUsuario(usuario);
-    return await usuarioRepository.SaveChangesAsync()
-        ? Results.Ok("Usuário Adicionado com sucesso")
-        : Results.BadRequest("Erro ao salvar Usuário");
-});
-
-app.MapPut("/api/usuario/{id}", async (IUsuarioRepository usuarioRepository, int id, Usuario usuario) =>
-{
-    var usuarioBanco = await usuarioRepository.BuscaUsuario(id);
-    if (usuarioBanco == null) return Results.NotFound("Usuário não encontrado");
-
-    usuarioBanco.Nome = usuario.Nome ?? usuarioBanco.Nome;
-    usuarioBanco.Saldo = usuario.Saldo == 0 ? 0 : usuario.Saldo;
-
-    usuarioRepository.AtualizarUsuario(usuarioBanco);
-    return await usuarioRepository.SaveChangesAsync()
-        ? Results.Ok("Usuário atualizado com sucesso")
-        : Results.BadRequest("Erro ao atualizar Usuário");
-});
-
-app.MapDelete("/api/usuario/{id}", async (IUsuarioRepository usuarioRepository, int id) =>
-{
-    var usuarioBanco = await usuarioRepository.BuscaUsuario(id);
-    if (usuarioBanco == null) return Results.NotFound("Usuário não encontrado");
-
-    usuarioRepository.DeletaUsuario(usuarioBanco);
-    return await usuarioRepository.SaveChangesAsync()
-        ? Results.Ok("Usuário deletado com sucesso")
-        : Results.BadRequest("Erro ao deletar Usuário");
-});
+// Mapeamento de controladores
+app.MapControllers();
 
 app.Run();
